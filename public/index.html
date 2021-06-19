@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="icon" href="img/kmitl_logo.png" type="image/png">
+<title>KMITL Generator Set Monitoring</title>
+
+
+<!-- stylesheets -->
+<link href="assets/fonts/font-roboto.css" rel="stylesheet">
+<link href="assets/bootstrap/bootstrap4-alpha3.min.css" rel="stylesheet">
+<link href="assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+<link href="assets/web-analytics/style.css" rel="stylesheet">
+
+<!-- scripts -->
+<script src="assets/jquery/jquery-3.1.0.min.js"></script>
+<script src="assets/tether/tether.min.js"></script>
+<script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="assets/web-analytics/real-time.js"></script>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/3.3.2/firebase.js"></script>
+
+<!-- canvasjs -->
+<script src="js/jquery.canvasjs.min.js"></script>
+
+<!-- Material Design fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  
+<!-- Bootstrap -->
+<link rel="stylesheet" href="css/bootstrap.min.css">
+
+<link rel="stylesheet" href="css/ripples.min.css">
+<script src="js/bootstrap.min.js"></script>
+<script src="js/material.min.js"></script>
+<script src="js/ripples.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+
+<!-- Animate.css -->
+<link rel="stylesheet" href="css/animate.min.css">
+
+<script>
+var chart, toOffline;
+var newItems = false;
+// Initialize Firebase
+var config = {
+    apiKey: "AIzaSyDvDD3OdBBwDKFC7Xp0homsofSfm_PlEMY",
+    authDomain: "test-app-android-studio.firebaseapp.com",
+    databaseURL: "https://test-app-android-studio.firebaseio.com",
+    projectId: "test-app-android-studio",
+    storageBucket: "test-app-android-studio.appspot.com",
+    messagingSenderId: "477373284510",
+    appId: "1:477373284510:web:df8699f0996a5683073b8f",
+    measurementId: "G-74PN9MK2NB"
+};
+
+$(document).ready(function(e) {
+	$.material.init()
+
+	CanvasJS.addColorSet("greenShades",
+                [//colorSet Array
+
+                "#ffaebc",
+                "#f3ea5f",
+                "#b4f8c8",
+                "#a0e7e5",
+				"#dcadff",
+                "#96ceb4",
+                "#ffeead",
+                "#ff6f69",
+				"#ffcc5c",
+                "#9bed7e",
+                "#2bd1fc",
+                "#c04df9",
+				"#ec2525",
+                "#ee6115",
+                "#f6ed0d",
+                "#5769f6",     
+				"#6812f2",      
+				"#52d8d4",
+                ]);
+
+	chart = new CanvasJS.Chart("chartContainer", {
+		zoomEnabled: true,
+		theme: "dark3",
+		animationEnabled: true,
+		exportEnabled: true,
+		animationEnabled: true,
+		colorSet: "greenShades",
+		title: {
+			text: "Graph"
+		},
+		axisX:{  
+			title: "Time",
+			valueFormatString: "HH:mm:ss",
+			
+			
+			Thickness: 2,
+
+		},
+		axisY: {
+			title: "Value",
+			valueFormatString: "####.##",
+			gridColor: "black" ,
+        	gridThickness: 0      
+		},
+		toolTip: {
+			animationEnabled: true  , 
+			shared: true,
+			contentFormatter: function (e) {
+				var content = "<strong>Time </strong>: " +CanvasJS.formatDate(e.entries[0].dataPoint.x, "HH:mm:ss") + "<br>";
+				content += "<strong>Temperature </strong>: " + e.entries[0].dataPoint.y + " &deg;C<br>";
+				content += "<strong>Humidity </strong>: " + e.entries[1].dataPoint.y + " %<br>";
+				content += "<strong>Lubricant Pressure </strong>: " + e.entries[2].dataPoint.y + " Bar<br>";
+				content += "<strong>Engine Speed </strong>: " + e.entries[3].dataPoint.y + " Rpm<br>";
+				content += "<strong>Battery Voltage </strong>: " + e.entries[4].dataPoint.y + " V<br>";
+				content += "<strong>Battery Current </strong>: " + e.entries[5].dataPoint.y + " A<br>";
+				content += "<strong>Fuel Level </strong>: " + e.entries[6].dataPoint.y + " L<br>";
+				content += "<strong>Cooling Water Temperature </strong>: " + e.entries[17].dataPoint.y + " &deg;C<br>";
+				content += "<strong>Ig1 </strong>: " + e.entries[7].dataPoint.y + " A ";
+				content += "<strong>Ig2 </strong>: " + e.entries[8].dataPoint.y + " A ";
+				content += "<strong>Ig3 </strong>: " + e.entries[9].dataPoint.y + " A<br>";
+				content += "<strong>Vg1 </strong>: " + e.entries[10].dataPoint.y + " V ";
+				content += "<strong>Vg2 </strong>: " + e.entries[11].dataPoint.y + " V ";
+				content += "<strong>Vg3 </strong>: " + e.entries[12].dataPoint.y + " V<br>";
+				content += "<strong>Frequency </strong>: " + e.entries[13].dataPoint.y + " Hz<br>";
+				content += "<strong>Apparent Power </strong>: " + e.entries[14].dataPoint.y + " kVA ";
+				content += "<strong>Real Power </strong>: " + e.entries[15].dataPoint.y + " kW ";
+				content += "<strong>Power Factor </strong>: " + e.entries[16].dataPoint.y ;
+				
+
+				return content;
+			}
+		},
+		legend:{
+		cursor:"pointer",
+		itemclick: toggleDataSeries
+				},
+		
+
+		//ข้อมูลที่เก็บ 1 datapoints = 1 plot
+		data: [
+		
+			{        
+		type: "line",  
+		name: "Temperature",        
+		showInLegend: true,
+		dataPoints: []
+	}, 
+	{        
+		type: "line",
+		name: "Humidity",        
+		showInLegend: true,
+		dataPoints: []
+	},
+	{        
+		type: "line",  
+		name: "Lubricant Pressure",        
+		showInLegend: true,
+		dataPoints: [
+		
+		]
+	},
+	{        
+		type: "line",  
+		name: "Engine Speed",        
+		showInLegend: true,
+		dataPoints: [
+		
+		]
+	},
+	{        
+		type: "line",  
+		name: "Battery Voltage",        
+		showInLegend: true,
+		dataPoints: [
+			
+		]
+	},  
+	{        
+		type: "line",  
+		name: "Battery Current",        
+		showInLegend: true,
+		dataPoints: [
+			
+		]
+	},
+	{        
+		type: "line",  
+		name: "Fuel Level",        
+		showInLegend: true,
+		dataPoints: [
+		
+		]
+	}, 
+	{        
+		type: "line",
+		name: "Ig1",        
+		showInLegend: true,
+		dataPoints: [
+			
+		]
+	},
+	{        
+		type: "line",  
+		name: "Ig2",        
+		showInLegend: true,
+		dataPoints: [
+		
+		]
+	},
+	{        
+		type: "line",  
+		name: "Ig3",        
+		showInLegend: true,
+		dataPoints: [
+			
+		]
+	},
+	{        
+		type: "line",  
+		name: "Vg1",        
+		showInLegend: true,
+		dataPoints: [
+			
+		]
+	},  
+	{        
+		type: "line",  
+		name: "Vg2",        
+		showInLegend: true,
+		dataPoints: [
+		
+		]
+	},
+
+	{        
+		type: "line",  
+		name: "Vg3",        
+		showInLegend: true,
+		dataPoints: [
+			
+		]
+	}, 
+	{        
+		type: "line",
+		name: "Frequency",        
+		showInLegend: true,
+		dataPoints: [
+			
+		]
+	},
+	{        
+		type: "line",  
+		name: "Apparent Power",        
+		showInLegend: true,
+		dataPoints: [
+			
+		]
+	},
+	{        
+		type: "line",  
+		name: "Real Power",        
+		showInLegend: true,
+		dataPoints: [
+		
+		]
+	},
+
+	{        
+		type: "line",  
+		name: "Power Factor",        
+		showInLegend: true,
+		dataPoints: [
+		
+		]
+	},
+	{        
+		type: "line",  
+		name: "Cooling Water Temperature",        
+		showInLegend: true,
+		dataPoints: [
+		
+		]
+	},
+	
+
+	
+
+
+			
+		]
+	}
+	
+	
+	
+	);
+	chart.render();	
+
+	// กดแล้วให้กราฟหาย
+	function toggleDataSeries(e) {
+	if(typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+		e.dataSeries.visible = false;
+	}
+	else {
+		e.dataSeries.visible = true;            
+	}
+	chart.render();
+}
+
+
+	firebase.initializeApp(config);
+
+				
+	
+	//get value from firebase
+	
+	var parameter = firebase.database().ref().child("parameter");
+		
+	parameter.on("child_added", function(snap) {
+		if (!newItems) return; // ทำให้ดึงแค่ค่าล่าสุดมา ***ตัวดีเลยไอห่า****
+		var row = snap.val();
+		
+
+		//เอาค่าลงกราฟ
+		row.time = new Date(row.time);
+		chart.options.data[0].dataPoints.push({x: row.time, y: row.temp});
+		chart.options.data[1].dataPoints.push({x: row.time, y: row.humi});
+		chart.options.data[2].dataPoints.push({x: row.time, y: row.lub_pr});
+		chart.options.data[3].dataPoints.push({x: row.time, y: row.rpm});
+		chart.options.data[4].dataPoints.push({x: row.time, y: row.vb});
+		chart.options.data[5].dataPoints.push({x: row.time, y: row.ib});
+		chart.options.data[6].dataPoints.push({x: row.time, y: row.fuel_lv});
+		chart.options.data[7].dataPoints.push({x: row.time, y: row.ig1});
+		chart.options.data[8].dataPoints.push({x: row.time, y: row.ig2});
+		chart.options.data[9].dataPoints.push({x: row.time, y: row.ig3});
+		chart.options.data[10].dataPoints.push({x: row.time, y: row.vg1});
+		chart.options.data[11].dataPoints.push({x: row.time, y: row.vg2});
+		chart.options.data[12].dataPoints.push({x: row.time, y: row.vg3});
+		chart.options.data[13].dataPoints.push({x: row.time, y: row.f});
+		chart.options.data[14].dataPoints.push({x: row.time, y: row.s});
+		chart.options.data[15].dataPoints.push({x: row.time, y: row.p});
+		chart.options.data[16].dataPoints.push({x: row.time, y: row.pf});
+		chart.options.data[17].dataPoints.push({x: row.time, y: row.cw_temp});
+
+		chart.render();
+		
+		//เอาค่าที่ดึงมาเก็บใส่ตัวแปร
+		$("#temp > .content").html(row.temp + " &deg;C");
+		$("#humi > .content").text(row.humi + " %");
+		$("#lub_pr > .content").text(row.lub_pr + " Bar");
+		$("#rpm > .content").text(row.rpm + " Rpm");
+		$("#vb > .content").text(row.vb + " V");
+		$("#ib > .content").text(row.ib + " A");
+		$("#fuel_lv > .content").text(row.fuel_lv + " L");
+		$("#ig1 > .content").text(row.ig1 + " A");
+		$("#ig2 > .content").text(row.ig2 + " A");
+		$("#ig3 > .content").text(row.ig3 + " A");
+		$("#vg1 > .content").text(row.vg1 + " V");3
+		$("#vg2 > .content").text(row.vg2 + " V");
+		$("#vg3 > .content").text(row.vg3 + " V");
+		$("#f > .content").text(row.f + " Hz");
+		$("#s > .content").text(row.s + " kVA");
+		$("#p > .content").text(row.p + " kW");
+		$("#pf> .content").text(row.pf + " ");
+		$("#cw_temp > .content").html(row.cw_temp + " &deg;C");
+
+		
+		$("#status").removeClass("danger").addClass("success");
+		$("#status > .content").text("ONLINE");
+		
+		setTimeoffline();
+	});
+	
+	var now = new Date();
+	parameter.orderByChild("time").startAt(now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate()).once("value", function(snap) {
+		console.log(snap);
+		newItems = true;
+		var dataRows = snap.val();
+		var lastRows = 0;
+		$.each(dataRows, function(index, row) {
+			row.time = new Date(row.time);
+		
+			chart.options.data[0].dataPoints.push({x: row.time, y: row.temp});
+			chart.options.data[1].dataPoints.push({x: row.time, y: row.humi});
+			chart.options.data[2].dataPoints.push({x: row.time, y: row.lub_pr});
+			chart.options.data[3].dataPoints.push({x: row.time, y: row.rpm});
+			chart.options.data[4].dataPoints.push({x: row.time, y: row.vb});
+			chart.options.data[5].dataPoints.push({x: row.time, y: row.ib});
+			chart.options.data[6].dataPoints.push({x: row.time, y: row.fuel_lv});
+			chart.options.data[7].dataPoints.push({x: row.time, y: row.ig1});
+			chart.options.data[8].dataPoints.push({x: row.time, y: row.ig2});
+			chart.options.data[9].dataPoints.push({x: row.time, y: row.ig3});
+			chart.options.data[10].dataPoints.push({x: row.time, y: row.vg1});
+			chart.options.data[11].dataPoints.push({x: row.time, y: row.vg2});
+			chart.options.data[12].dataPoints.push({x: row.time, y: row.vg3});
+			chart.options.data[13].dataPoints.push({x: row.time, y: row.f});
+			chart.options.data[14].dataPoints.push({x: row.time, y: row.s});
+			chart.options.data[15].dataPoints.push({x: row.time, y: row.p});
+			chart.options.data[16].dataPoints.push({x: row.time, y: row.pf});
+			chart.options.data[17].dataPoints.push({x: row.time, y: row.cw_temp});
+			 lastRows = row;
+		});
+		chart.render();
+		
+		var Arow = lastRows;
+		$("#temp > .content").html(Arow.temp + " &deg;C");
+		$("#humi > .content").text(Arow.humi + " %");
+		$("#lub_pr > .content").text(Arow.lub_pr + " Bar");
+		$("#rpm > .content").text(Arow.rpm + " Rpm");
+		$("#vb > .content").text(Arow.vb + " V");
+		$("#ib > .content").text(Arow.ib + " A");
+		$("#fuel_lv > .content").text(Arow.fuel_lv + " L");
+		$("#ig1 > .content").text(Arow.ig1 + " A");
+		$("#ig2 > .content").text(Arow.ig2 + " A");
+		$("#ig3 > .content").text(Arow.ig3 + " A");
+		$("#vg1 > .content").text(Arow.vg1 + " V");
+		$("#vg2 > .content").text(Arow.vg2 + " V");
+		$("#vg3 > .content").text(Arow.vg3 + " V");
+		$("#f > .content").text(Arow.f + " Hz");
+		$("#s > .content").text(Arow.s + " kVA");
+		$("#p > .content").text(Arow.p + " kW");
+		$("#pf> .content").text(Arow.pf + " ");
+		$("#cw_temp > .content").html(Arow.cw_temp + " &deg;C");
+
+
+		var now = new Date();
+		Arow.time = new Date(Arow.time);
+		if (Math.round(now) -  Math.round(Arow.time) < (2 * 60 * 1000)) {
+			$("#status").removeClass("danger").addClass("success");
+			$("#status > .content").text("ONLINE");
+		} else {
+			$("#status").removeClass("success").addClass("danger");
+			$("#status > .content").text("OFFLINE");
+		}
+		
+		setTimeoffline();
+		
+	});
+});
+
+var setTimeoffline = function() {
+	if (typeof toOffline === "number") clearTimeout(toOffline);
+	
+	toOffline = setTimeout(function() {
+		$("#status").removeClass("success").addClass("danger");
+		$("#status > .content").text("OFFLINE");
+	}, 2 * 60 * 1000);
+}
+</script>
+
+<style>
+
+body {
+	background-color: #ffffff;
+	}
+
+.dialog {
+	width: 100%;
+	border-radius: 4px;
+	margin-bottom: 20px;
+	box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 6px 0 rgba(0, 0, 0, 0.12);
+}
+.dialog > .content {
+	padding: 30px 0;
+	border-radius: 6px 6px 0 0;
+	font-size: 32px;
+	color: rgba(0, 0, 0, 0.84);
+	font-weight: bold;
+	text-align: center;
+}
+.dialog.primary > .content{
+	background: #56ec99;
+}
+.dialog.success > .content {
+	background: #00ff00;
+}
+.dialog.info > .content {
+	background: #f1d039;
+}
+.dialog.warning > .content {
+	background: #00f7ffd5;
+}
+
+.dialog.danger > .content {
+	background: #f44336;
+}
+.dialog.temp > .content {
+	background: #ffaebc;
+}
+.dialog.humi > .content {
+	background:#f3ea5f;
+}
+.dialog.lub_pr > .content {
+	background: #b4f8c8;
+}
+.dialog.rpm > .content {
+	background: #a0e7e5;
+}
+.dialog.vb > .content {
+	background:#dcadff;
+}
+.dialog.ib> .content {
+	background:#96ceb4;
+}
+.dialog.fuel_lv > .content {
+	background: #ffeead;
+}
+.dialog.ig1 > .content {
+	background: #ff6f69;
+}
+.dialog.ig2 > .content {
+	background: #ffcc5c;
+}
+.dialog.ig3 > .content {
+	background: #9bed7e;
+}
+.dialog.vg1 > .content {
+	background: #2bd1fc;
+}
+.dialog.vg2 > .content {
+	background: #c04df9;
+}
+.dialog.vg3 > .content {
+	background: #ec2525;
+}
+.dialog.f > .content {
+	background: #ee6115;
+}
+.dialog.s > .content {
+	background: #f6ed0d;
+}
+.dialog.p > .content {
+	background: #5769f6;
+}
+.dialog.pf> .content {
+	background:#6812f2;
+}
+.dialog.cw_temp > .content {
+	background: #52d8d4;
+}
+
+.dialog > .title {
+	background: #FFF;
+	border-radius: 0 0 6px 6px;
+	font-size: 22px;
+	color: rgba(0,0,0, 0.87);
+	text-align: center;
+	padding: 10px 0;
+	/* box-shadow: 0px 10px 8px -10px rgba(0, 0, 0, 0.4) inset; */
+	font-weight: bold;
+}
+.dialog > .title2 {
+	
+	
+	font-size: 36px;
+	color: rgba(0, 0, 0, 0.87);
+	text-align: justify;
+	
+	/* box-shadow: 0px 10px 8px -10px rgba(0, 0, 0, 0.4) inset; */
+	font-weight: bold;
+}
+.nav-tabs {
+	margin-bottom: 20px;
+}
+</style>
+</head>
+
+<body>
+	<!-- header -->
+	<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="Index.html">
+				<img src="img/unnamed.png"  width="70" height="55" class="d-inline-block align-top">
+				
+				
+			  </a>
+		  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		  </button>
+		  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+			  <li class="nav-item">
+				<a class="nav-link active" aria-current="page" href="Index.html">Real Time Monitoring </a>
+			  </li>
+			  <li class="nav-item">
+				<a class="nav-link" href="control.html">Controlling</a>
+			  </li>
+			  <li class="nav-item dropdown">
+				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+				  History
+				</a>
+				<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+				  <li><a class="dropdown-item" href="table.html">Table</a></li>
+				  <li><hr class="dropdown-divider"></li>
+				  <li><a class="dropdown-item" href="graph.html">Graph</a></li>
+				</ul>
+			  </li>
+			  <li class="nav-item">
+				<a class="nav-link" href="map2.html">Realtime Location</a>
+			  </li>
+			  <li class="nav-item dropdown">
+				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+				  About Us
+				</a>
+				<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+				  <li><a class="dropdown-item" href="project.html">Project</a></li>
+				  <li><hr class="dropdown-divider"></li>
+				  <li><a class="dropdown-item" href="advisor.html">Advisor</a></li>
+				  <li><a class="dropdown-item" href="member.html">Member</a></li>
+				</ul>
+			  </li>
+			
+			</ul>
+			<form class="d-flex">
+			  <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+			  <button class="btn btn-outline-success" type="submit">Search</button>
+			</form>
+		  </div>
+		</div>
+	  </nav>
+		<br></br><br></br>
+
+
+
+
+
+	<!-- Parameter -->
+	<div class="tab-content">
+		<div role="tabpanel" class="tab-pane active" id="overview">
+		  <div class="row">
+			<div class="col-sm-12">
+				<div class="dialog ">
+					
+					<div class="title2">Info</div>
+			   </div>
+			 </div>
+			 <div class="col-sm-4">
+				<div class="dialog success fadeIn animated" id="status">
+					<div class="content">???</div>
+					<div class="title">Status</div>
+			   </div>
+			 </div>
+			 <div class="col-sm-4">
+				<div class="dialog info">
+					<div class="content">KMITL-ECC</div>
+					<div class="title">Location</div>
+			    </div>
+			 </div>
+			 <div class="col-sm-4">
+				<div class="dialog warning">
+				<div class="content">28 Feb 2021</div>
+				<div class="title">Installation Date</div>
+			</div>
+		 </div>
+			 <div class="col-sm-12">
+				<div class="dialog ">
+					
+					<div class="title2">Engine Parameter</div>
+			   </div>
+			 </div>
+			 <div class="col-sm-4">
+			   <div class="dialog temp fadeIn animated" id="temp">
+				 <div class="content">&deg;C</div>
+				 <div class="title">Temperature <a class="btn btn-success" href="1_temp_g.html" role="button">Graph</a> <a class="btn btn-danger" href="1_temp_t.html" role="button">Table</a></div>
+			   </div>
+			 </div>
+			 <div class="col-sm-4">
+			   <div class="dialog humi fadeIn animated" id="humi">
+				 <div class="content">%</div>
+				 <div class="title">Humidity <a class="btn btn-success" href="2_humi_g.html" role="button">Graph</a> <a class="btn btn-danger" href="2_humi_t.html" role="button">Table</a></div>
+			   </div>
+			 </div>
+			 <div class="col-sm-4">
+				<div class="dialog vb fadeIn animated" id="vb">
+				  <div class="content">V</div>
+				  <div class="title">Battery Voltage <a class="btn btn-success" href="3_vb_g.html" role="button">Graph</a> <a class="btn btn-danger" href="3_vb_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+			  <div class="col-sm-4">
+				<div class="dialog ib fadeIn animated" id="ib">
+				  <div class="content">A</div>
+				  <div class="title">Battery Current <a class="btn btn-success" href="4_ib_g.html" role="button">Graph</a> <a class="btn btn-danger" href="4_ib_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+			 <div class="col-sm-4">
+				<div class="dialog lub_pr fadeIn animated" id="lub_pr">
+				  <div class="content">Bar</div>
+				  <div class="title">Lubricant Pressure <a class="btn btn-success" href="5_lb_pr_g.html" role="button">Graph</a> <a class="btn btn-danger" href="5_lb_pr_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+			  <div class="col-sm-4">
+				<div class="dialog fuel_lv fadeIn animated" id="fuel_lv">
+				  <div class="content">L</div>
+				  <div class="title">Fuel Level <a class="btn btn-success" href="6_fuel_lv_g.html" role="button">Graph</a> <a class="btn btn-danger" href="6_fuel_lv_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+			  <div class="col-sm-4">
+				<div class="dialog rpm fadeIn animated" id="rpm">
+				  <div class="content">Rpm</div>
+				  <div class="title">Engine Speed <a class="btn btn-success" href="7_rpm_g.html" role="button">Graph</a> <a class="btn btn-danger" href="7_rpm_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+			  <div class="col-sm-4">
+				<div class="dialog cw_temp fadeIn animated" id="cw_temp">
+				  <div class="content">&deg;C</div>
+				  <div class="title">Cooling Water Temperature <a class="btn btn-success" href="8_cw_temp_g.html" role="button">Graph</a> <a class="btn btn-danger" href="8_cw_temp_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+
+
+
+
+			  <div class="col-sm-12">
+				<div class="dialog ">
+					
+					<div class="title2">Generator Parameter</div>
+			   </div>
+			 </div>
+			  <div class="col-sm-4">
+				<div class="dialog vg1 fadeIn animated" id="vg1">
+				  <div class="content">V</div>
+				  <div class="title">Generator Voltage 1 <a class="btn btn-success" href="9_vg1_g.html" role="button">Graph</a> <a class="btn btn-danger" href="9_vg1_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+ 
+			  <div class="col-sm-4">
+				 <div class="dialog vg2 fadeIn animated" id="vg2">
+				   <div class="content">V</div>
+				   <div class="title">Generator Voltage 2 <a class="btn btn-success" href="10_vg2_g.html" role="button">Graph</a> <a class="btn btn-danger" href="10_vg2_t.html" role="button">Table</a></div>
+				 </div>
+			   </div>
+			   <div class="col-sm-4">
+				 <div class="dialog vg3 fadeIn animated" id="vg3">
+				   <div class="content">V</div>
+				   <div class="title">Generator Voltage 3 <a class="btn btn-success" href="11_vg3_g.html" role="button">Graph</a> <a class="btn btn-danger" href="11_vg3_t.html" role="button">Table</a></div>
+				 </div>
+			   </div>
+			   <div class="col-sm-4">
+				 <div class="dialog ig1 fadeIn animated" id="ig1">
+				   <div class="content">A</div>
+				   <div class="title">Generator Current 1 <a class="btn btn-success" href="12_ig1_g.html" role="button">Graph</a> <a class="btn btn-danger" href="12_ig1_t.html" role="button">Table</a></div>
+				 </div>
+			   </div>
+			   <div class="col-sm-4">
+				<div class="dialog ig2 fadeIn animated" id="ig2">
+				  <div class="content">A</div>
+				  <div class="title">Generator Current 2 <a class="btn btn-success" href="13_ig2_g.html" role="button">Graph</a> <a class="btn btn-danger" href="13_ig2_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+			  <div class="col-sm-4">
+				<div class="dialog ig3 fadeIn animated" id="ig3">
+				  <div class="content">A</div>
+				  <div class="title">Generator Current 3 <a class="btn btn-success" href="14_ig3_g.html" role="button">Graph</a> <a class="btn btn-danger" href="14_ig3_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+			
+ 
+			  <div class="col-sm-4">
+				 <div class="dialog s fadeIn animated" id="s">
+				   <div class="content">VA</div>
+				   <div class="title">Apparent Power <a class="btn btn-success" href="15_s_g.html" role="button">Graph</a> <a class="btn btn-danger" href="15_s_t.html" role="button">Table</a></div>
+				 </div>
+			   </div>
+			   <div class="col-sm-4">
+				 <div class="dialog p fadeIn animated" id="p">
+				   <div class="content">W</div>
+				   <div class="title">Real Power <a class="btn btn-success" href="16_p_g.html" role="button">Graph</a> <a class="btn btn-danger" href="16_p_t.html" role="button">Table</a></div>
+				 </div>
+			   </div>
+			   <div class="col-sm-4">
+				 <div class="dialog pf fadeIn animated" id="pf">
+				   <div class="content"> </div>
+				   <div class="title">Power Factor <a class="btn btn-success" href="17_pf_g.html" role="button">Graph</a> <a class="btn btn-danger" href="17_pf_t.html" role="button">Table</a></div>
+				 </div>
+			   </div>
+			   <div class="col-sm-4">
+				<div class="dialog f fadeIn animated" id="f">
+				  <div class="content">Hz</div>
+				  <div class="title">Frequency <a class="btn btn-success" href="18_f_g.html" role="button">Graph</a> <a class="btn btn-danger" href="18_f_t.html" role="button">Table</a></div>
+				</div>
+			  </div>
+			  <div class="col-sm-12">
+				<div class="dialog ">
+					
+					<div class="title2">Plotting</div>
+			   </div>
+			 </div>
+
+		  </div>
+		</div>
+		
+		  <div id="chartContainer" style="height: 600px; width: 100%;"></div>
+		</div>
+	  </div>
+	  <!-- /Parameter -->
+
+
+	  
+</body>
+
+</html>

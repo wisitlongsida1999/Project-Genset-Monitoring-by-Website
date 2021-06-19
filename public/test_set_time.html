@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Acme Web Design</title>
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
+  <link rel="stylesheet" href="style">
+</head>
+<body>
+ 
+      <div class="contact">
+        <h3>SET RunTime</h3>
+        <div class="alert">Your setting has been sent</div>
+        <form id="contactForm">
+          <p>
+            <label>Minute</label>
+            <input type="number" name="name" id="name" required>
+          </p>
+          <p>
+            <label>Hour</label>
+            <input type="number"  name="company" id="company" required>
+          </p>
+          <p>
+            <label>Date</label>
+            <input type="number"  name="email" id="email" required>
+          </p>
+          <p>
+            <label>Month</label>
+            <input type="number" name="phone" id="phone" required>
+          </p>
+          <p class="full">
+            <label>Year</label>
+            <input type="number" name="message"  id="message" required>
+          </p>
+          <p class="full">
+            <button type="submit">Submit</button>
+          </p>
+        </form>
+      </div>
+    
+
+  <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
+  <script>
+  // Initialize Firebase (ADD YOUR OWN DATA)
+  var firebaseConfig = {
+            apiKey: "AIzaSyCXHu76M5JSpHJjE14Jt9ypesJMzIe4mh4",
+            authDomain: "test-33c48.firebaseapp.com",
+            databaseURL: "https://test-33c48.firebaseio.com",
+            projectId: "test-33c48",
+            storageBucket: "test-33c48.appspot.com",
+            messagingSenderId: "910501442006",
+            appId: "1:910501442006:web:c4cff17ee5a1f7b7e8f477",
+            measurementId: "G-5YNB8F0YM7"
+        };
+     // Initialize Firebase
+     firebase.initializeApp(firebaseConfig);
+    
+    // Reference messages collection
+    var messagesRef = firebase.database().ref('messages');
+    
+    // Listen for form submit
+    document.getElementById('contactForm').addEventListener('submit', submitForm);
+    
+    // Submit form
+    function submitForm(e){
+      e.preventDefault();
+    
+      // Get values
+      var name = getInputVal('name');
+      var company = getInputVal('company');
+      var email = getInputVal('email');
+      var phone = getInputVal('phone');
+      var message = getInputVal('message');
+    
+      // Save message
+      saveMessage(name, company, email, phone, message);
+    
+      // Show alert
+      document.querySelector('.alert').style.display = 'block';
+    
+      // Hide alert after 3 seconds
+      setTimeout(function(){
+        document.querySelector('.alert').style.display = 'none';
+      },3000);
+    
+      // Clear form
+      document.getElementById('contactForm').reset();
+    }
+    
+    // Function to get get form values
+    function getInputVal(id){
+      return document.getElementById(id).value;
+    }
+    
+    // Save message to firebase
+    function saveMessage(name, company, email, phone, message){
+      
+     firebase.database().ref('/Genset control/Input command/Time/T/minute').set(name);
+     firebase.database().ref('/Genset control/Input command/Time/T/hour').set(company);
+     firebase.database().ref('/Genset control/Input command/Time/T/day').set(email);
+     firebase.database().ref('/Genset control/Input command/Time/T/month').set(phone);
+     firebase.database().ref('/Genset control/Input command/Time/T/year').set( message);
+     
+    }
+ 
+      //check status date response
+      var date_i= firebase.database().ref("/Genset control/Input command/Time");
+        date_i.on('value', function(snapshot) {
+        snapshot.forEach(function(childSnapshot) {
+        var chk_date_i=childSnapshot.val();
+
+        //condition check status due date
+        var chk_date_i_min=chk_date_i.minute;
+        var chk_date_i_hr=chk_date_i.hour;
+        var chk_date_i_day=chk_date_i.day;
+        var chk_date_i_mon=chk_date_i.month;
+        var chk_date_i_y=chk_date_i.year;
+        
+  
+
+        var date_o= firebase.database().ref("/Genset control/Output status/OTime");
+        date_o.on('value', function(snapshot) {
+        snapshot.forEach(function(childSnapshot) {
+        var chk_date_o=childSnapshot.val();
+
+        //condition check status due date
+        var chk_date_o_min=chk_date_o.Ominute;
+        var chk_date_o_hr=chk_date_o.Ohour;
+        var chk_date_o_day=chk_date_o.Oday;
+        var chk_date_o_mon=chk_date_o.Omonth;
+        var chk_date_o_y=chk_date_o.Oyear;
+        var result 
+        if ( chk_date_i_min==  chk_date_o_min &&chk_date_i_hr==  chk_date_o_hr &&chk_date_i_day==  chk_date_o_day  &&chk_date_i_mon==  chk_date_o_mon &&chk_date_i_y==  chk_date_o_y  ) {
+          result = "True";
+        }
+        else{
+          result = "False";
+        }
+        document.getElementById("status").innerHTML = result;
+
+
+       });
+   });
+  });
+});
+    </script>
+  <style>*{
+    box-sizing: border-box;
+  }
+  
+  body{
+    background:#ffffff;
+    color:#485e74;
+    line-height:1.6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding:1em;
+  }
+  
+  .container{
+    max-width:1170px;
+    margin-left:auto;
+    margin-right:auto;
+    padding:1em;
+  }
+  
+  ul{
+    list-style: none;
+    padding:0;
+  }
+  
+  .brand{
+    text-align: center;
+  }
+  
+  .brand span{
+    color:#fff;
+  }
+  
+  .wrapper{
+    box-shadow: 0 0 20px 0 rgba(72,94,116,0.7);
+  }
+  
+  .wrapper > *{
+    padding: 1em;
+  }
+  
+  .company-info{
+    background:#c9e6ff;
+  }
+  
+  .company-info h3, .company-info ul{
+    text-align: center;
+    margin:0 0 1rem 0;
+  }
+  
+  .contact{
+    background:#f9feff;
+  }
+  
+  /* FORM STYLES */
+  .contact form{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap:20px;
+  }
+  
+  .contact form label{
+    display:block;
+  }
+  
+  .contact form p{
+    margin:0;
+  }
+  
+  .contact form .full{
+    grid-column: 1 / 3;
+  }
+  
+  .contact form button, .contact form input, .contact form textarea{
+    width:100%;
+    padding:1em;
+    border:1px solid #c9e6ff;
+  }
+  
+  .contact form button{
+    background:#c9e6ff;
+    border:0;
+    text-transform: uppercase;
+  }
+  
+  .contact form button:hover,.contact form button:focus{
+    background:#92bde7;
+    color:#fff;
+    outline:0;
+    transition: background-color 2s ease-out;
+  }
+  
+  .alert{
+    text-align: center;
+    padding:10px;
+    background:#79c879;
+    color:#fff;
+    margin-bottom:10px;
+    display:none;
+  }
+  
+  /* LARGE SCREENS */
+  @media(min-width:700px){
+    .wrapper{
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+    }
+  
+    .wrapper > *{
+      padding:2em;
+    }
+  
+    .company-info h3, .company-info ul, .brand{
+      text-align: left;
+    }
+  }</style>
+<p>Response</p><span id="status"></span>
+</body>
+</html>

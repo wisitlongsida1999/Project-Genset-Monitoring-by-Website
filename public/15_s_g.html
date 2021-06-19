@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="icon" href="img/kmitl_logo.png" type="image/png">
+<title>KMITL Generator Set Monitoring</title>
+
+
+<!-- stylesheets -->
+<link href="assets/fonts/font-roboto.css" rel="stylesheet">
+<link href="assets/bootstrap/bootstrap4-alpha3.min.css" rel="stylesheet">
+<link href="assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+<link href="assets/web-analytics/style.css" rel="stylesheet">
+
+<!-- scripts -->
+<script src="assets/jquery/jquery-3.1.0.min.js"></script>
+<script src="assets/tether/tether.min.js"></script>
+<script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="assets/web-analytics/real-time.js"></script>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/3.3.2/firebase.js"></script>
+
+<!-- canvasjs -->
+<script src="js/jquery.canvasjs.min.js"></script>
+
+<!-- Material Design fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  
+<!-- Bootstrap -->
+<link rel="stylesheet" href="css/bootstrap.min.css">
+
+<link rel="stylesheet" href="css/ripples.min.css">
+<script src="js/bootstrap.min.js"></script>
+<script src="js/material.min.js"></script>
+<script src="js/ripples.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+
+<!-- Animate.css -->
+<link rel="stylesheet" href="css/animate.min.css">
+
+<script>
+var chart, toOffline;
+var newItems = false;
+// Initialize Firebase
+var config = {
+    apiKey: "AIzaSyDvDD3OdBBwDKFC7Xp0homsofSfm_PlEMY",
+    authDomain: "test-app-android-studio.firebaseapp.com",
+    databaseURL: "https://test-app-android-studio.firebaseio.com",
+    projectId: "test-app-android-studio",
+    storageBucket: "test-app-android-studio.appspot.com",
+    messagingSenderId: "477373284510",
+    appId: "1:477373284510:web:df8699f0996a5683073b8f",
+    measurementId: "G-74PN9MK2NB"
+};
+
+$(document).ready(function(e) {
+	$.material.init()
+
+	CanvasJS.addColorSet("greenShades",
+                [//colorSet Array
+
+                "#f6ed0d",
+            
+                ]);
+
+	chart = new CanvasJS.Chart("chartContainer", {
+		zoomEnabled: true,
+		zoomType: "xy",
+		interactivityEnabled: true,
+		//theme: "light2",
+		exportEnabled: true,
+		animationEnabled: true,
+		colorSet: "greenShades",
+		
+		title: {
+			text: "Graph"
+		},
+		axisX:{  
+			
+			title: "Time",
+			valueFormatString: "YYYY-MMM-D [HH:mm:ss]",
+			gridColor: "black" ,
+        	gridThickness: 0.2    ,
+			
+			Thickness: 2,
+		
+		},
+		axisY: {	
+				crosshair: {
+        		enabled: true
+      },
+			title: "Value",
+			valueFormatString: "####.##",
+			gridColor: "black" ,
+        	gridThickness: 0.2 , 
+		   
+		},
+		toolTip: {
+			animationEnabled: true  , 
+			//shared:false,
+
+			contentFormatter: function (e) {
+				var content = " ";
+				for (var i = 0; i < e.entries.length; i++) {
+					content += "<strong>"+e.entries[i].dataSeries.name + "</strong>"+"<strong>"+ " : "+ "</strong>" + e.entries[i].dataPoint.y +"<br>"+"<strong>"+"Time : "+ "</strong>" + e.entries[i].dataPoint.x ;
+					content += "<br/>";
+				}
+				return content;
+			}
+			
+		},
+		legend:{
+		cursor:"pointer",
+		
+				},
+		
+
+		//ข้อมูลที่เก็บ 1 datapoints = 1 plot
+		data: [
+		
+			{        
+                type: "line",  
+		name: "Apparent Power (kVA) ",        
+		showInLegend: true,
+		dataPoints: [
+			
+		]
+	}, 
+
+	
+
+
+			
+		]
+	}
+	
+	
+	
+	);
+	chart.render();	
+
+
+
+
+	firebase.initializeApp(config);
+
+
+	
+	//get value from firebase grah
+	
+	var parameter = firebase.database().ref().child("parameter");
+		
+	parameter.on("child_added", function(snap) {
+		//if (!newItems) return;  ทำให้ดึงแค่ค่าล่าสุดมา ***ตัวดีเลยไอห่า****
+		var row = snap.val();
+	
+    
+
+ 		//เอาค่าลงกราฟ
+		row.time = new Date(row.time);
+		chart.options.data[0].dataPoints.push({x: row.time, y: row.s});
+		
+
+		chart.render();
+		
+		
+	});
+	
+	var now = new Date();
+	parameter.orderByChild("time").startAt(now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate()).once("value", function(snap) {
+		console.log(snap);
+		newItems = true;
+		var dataRows = snap.val();
+		var lastRows = 0;
+		$.each(dataRows, function(index, row) {
+			row.time = new Date(row.time);
+		
+			chart.options.data[0].dataPoints.push({x: row.time, y: row.s});
+			
+			 lastRows = row;
+		});
+		chart.render();
+		
+		
+	});
+});
+
+
+
+</script>
+
+
+</head>
+
+<body>
+	<!-- header -->
+	<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="Index.html">
+				<img src="img/unnamed.png"  width="70" height="55" class="d-inline-block align-top">
+			
+			
+			  </a>
+		  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		  </button>
+		  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+			  <li class="nav-item">
+				<a class="nav-link active" aria-current="page" href="Index.html">Real Time Monitoring </a>
+			  </li>
+			  <li class="nav-item">
+				<a class="nav-link" href="control.html">Controlling</a>
+			  </li>
+			  <li class="nav-item dropdown">
+				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+				  History
+				</a>
+				<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+				  <li><a class="dropdown-item" href="table.html">Table</a></li>
+				  <li><hr class="dropdown-divider"></li>
+				  <li><a class="dropdown-item" href="graph.html">Graph</a></li>
+				</ul>
+			  </li>
+			  <li class="nav-item">
+				<a class="nav-link" href="map2.html">Realtime Location</a>
+			  </li>
+			  <li class="nav-item dropdown">
+				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+				  About Us
+				</a>
+				<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+				  <li><a class="dropdown-item" href="project.html">Project</a></li>
+				  <li><hr class="dropdown-divider"></li>
+				  <li><a class="dropdown-item" href="advisor.html">Advisor</a></li>
+				  <li><a class="dropdown-item" href="member.html">Member</a></li>
+				</ul>
+			  </li>
+			
+			</ul>
+			<form class="d-flex">
+			  <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+			  <button class="btn btn-outline-success" type="submit">Search</button>
+			</form>
+		  </div>
+		</div>
+	  </nav>
+		<br></br><br></br>
+
+
+
+
+
+	<!-- graph -->
+
+			
+
+		
+		  <div id="chartContainer" style="height: 690px; width: 100%;"></div>
+	
+	
+
+	
+
+
+	  
+</body>
+
+</html>
